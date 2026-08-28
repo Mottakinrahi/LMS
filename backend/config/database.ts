@@ -12,7 +12,9 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Database 
     );
   }
 
-  const dbFilePath = path.resolve(__dirname, '..', '..', env('DATABASE_FILENAME', '.tmp/data.db'));
+  const rawFilename = env('DATABASE_FILENAME');
+  const filename = (rawFilename && rawFilename.trim() !== '') ? rawFilename : '.tmp/data.db';
+  const dbFilePath = path.resolve(__dirname, '..', '..', filename);
   const dbDir = path.dirname(dbFilePath);
 
   if (client === 'sqlite' && !fs.existsSync(dbDir)) {
