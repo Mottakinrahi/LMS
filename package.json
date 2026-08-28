@@ -1,0 +1,10 @@
+{
+  "name": "lms-monorepo",
+  "private": true,
+  "scripts": {
+    "dev:backend": "pnpm --filter backend develop",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build:backend": "pnpm --filter backend build",
+    "build:frontend": "pnpm --filter frontend build"
+  }
+}
