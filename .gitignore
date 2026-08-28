@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js build output
+frontend/.next/
+frontend/out/
+
+# Strapi build output & local databases
+backend/.tmp/
+backend/build/
+backend/dist/
+backend/.cache/
+backend/public/uploads/
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
