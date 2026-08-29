@@ -105,6 +105,27 @@ export default async function DashboardPage({
               </Link>
             </div>
           )}
+
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg hover:border-slate-700 transition-all">
+            <h2 className="text-lg font-bold text-white mb-2">📰 Platform Blog</h2>
+            <p className="text-slate-400 text-sm mb-4">Read articles, tutorials, and system updates.</p>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/blog"
+                className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                Read Blog &rarr;
+              </Link>
+              {(roleName === 'Admin' || roleName === 'Content Manager' || roleName === 'content_manager') && (
+                <Link
+                  href="/blog/manage"
+                  className="text-sm font-semibold text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  Manage Blog &rarr;
+                </Link>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
