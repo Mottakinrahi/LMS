@@ -98,7 +98,7 @@ export default async function DashboardPage({
               <h2 className="text-lg font-bold text-white mb-2">⚡ Admin Panel</h2>
               <p className="text-slate-400 text-sm mb-4">Manage user roles, system stats & platform permissions.</p>
               <Link
-                href="/admin"
+                href="/admin-panel"
                 className="inline-block text-sm font-semibold text-purple-400 hover:text-purple-300 transition-colors"
               >
                 Admin Control Panel &rarr;
