@@ -97,12 +97,18 @@ export default async function InstructorDashboardPage() {
                     <p className="text-slate-400 text-sm line-clamp-2">{attrs.description || 'No description'}</p>
                   </div>
 
-                  <div className="pt-6 border-t border-slate-800/80 mt-4 flex items-center justify-between gap-2">
+                  <div className="pt-6 border-t border-slate-800/80 mt-4 flex flex-wrap items-center gap-2">
                     <Link
                       href={`/instructor/courses/${docId}/lessons`}
                       className="px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20 text-xs font-semibold rounded-lg transition-all"
                     >
-                      Manage Lessons &rarr;
+                      Manage Lessons →
+                    </Link>
+                    <Link
+                      href={`/instructor/courses/${docId}/quiz`}
+                      className="px-4 py-2 bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 text-xs font-semibold rounded-lg transition-all"
+                    >
+                      Quiz Builder →
                     </Link>
                     <Link
                       href={`/courses/${docId}`}

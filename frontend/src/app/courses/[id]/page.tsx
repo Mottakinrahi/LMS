@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 async function getCourseDetails(id: string) {
   try {
-    const res = await fetch(`${STRAPI_URL}/api/courses/${id}?populate[lessons][sort]=order:asc&populate[owner]=*`, {
+    const res = await fetch(`${STRAPI_URL}/api/courses/${id}?populate[lessons][sort]=order:asc&populate[owner]=*&populate[quizzes][fields][0]=title&populate[quizzes][fields][1]=documentId`, {
       cache: 'no-store',
     });
     if (!res.ok) return null;
@@ -73,6 +73,7 @@ export default async function CourseDetailPage({
 
   const attrs = course.attributes || course;
   const lessons = attrs.lessons || [];
+  const quizzes = attrs.quizzes || [];
   const owner = attrs.owner?.data?.attributes || attrs.owner;
 
   return (
@@ -173,6 +174,28 @@ export default async function CourseDetailPage({
             </div>
           )}
         </div>
+        {/* Quizzes Section — shown to enrolled students */}
+        {isEnrolled && quizzes.length > 0 && (
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-4">
+            <h2 className="text-xl font-bold text-white mb-4">📝 Quizzes ({quizzes.length})</h2>
+            <div className="space-y-3">
+              {quizzes.map((quiz: any) => (
+                <div
+                  key={quiz.documentId || quiz.id}
+                  className="flex items-center justify-between p-4 bg-slate-950 border border-slate-800 rounded-xl"
+                >
+                  <span className="font-semibold text-white">{quiz.title}</span>
+                  <Link
+                    href={`/courses/${id}/quiz/${quiz.documentId || quiz.id}`}
+                    className="text-xs font-semibold text-purple-400 hover:text-purple-300 transition-colors"
+                  >
+                    Take Quiz →
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
