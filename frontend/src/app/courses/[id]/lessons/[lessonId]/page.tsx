@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { STRAPI_URL } from '@/lib/api';
+import MarkCompleteButton from './MarkCompleteButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,14 +10,14 @@ async function getLessonData(courseId: string, lessonId: string) {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
 
-  if (!token) return { allowed: false, lesson: null, course: null, lessons: [] };
+  if (!token) return { allowed: false, lesson: null, course: null, lessons: [], userId: null, isCompleted: false };
 
   try {
     // 1. Verify User
     const meRes = await fetch(`${STRAPI_URL}/api/users/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!meRes.ok) return { allowed: false, lesson: null, course: null, lessons: [] };
+    if (!meRes.ok) return { allowed: false, lesson: null, course: null, lessons: [], userId: null, isCompleted: false };
     const user = await meRes.json();
 
     // 2. Verify Enrollment or Admin/Instructor access
@@ -32,10 +33,10 @@ async function getLessonData(courseId: string, lessonId: string) {
         }
       );
 
-      if (!enrollRes.ok) return { allowed: false, lesson: null, course: null, lessons: [] };
+      if (!enrollRes.ok) return { allowed: false, lesson: null, course: null, lessons: [], userId: null, isCompleted: false };
       const enrollData = await enrollRes.json();
       if (!enrollData.data || enrollData.data.length === 0) {
-        return { allowed: false, lesson: null, course: null, lessons: [] };
+        return { allowed: false, lesson: null, course: null, lessons: [], userId: null, isCompleted: false };
       }
     }
 
@@ -48,7 +49,7 @@ async function getLessonData(courseId: string, lessonId: string) {
       }
     );
 
-    if (!courseRes.ok) return { allowed: true, lesson: null, course: null, lessons: [] };
+    if (!courseRes.ok) return { allowed: true, lesson: null, course: null, lessons: [], userId: null, isCompleted: false };
     const courseData = await courseRes.json();
     const course = courseData.data?.attributes || courseData.data;
     const lessons = course?.lessons || [];
@@ -58,9 +59,22 @@ async function getLessonData(courseId: string, lessonId: string) {
       (l: any) => l.documentId === lessonId || String(l.id) === lessonId
     );
 
-    return { allowed: true, lesson, course, lessons };
+    // 4. Check if this lesson is already completed by the student
+    let isCompleted = false;
+    if (lesson) {
+      const progressRes = await fetch(
+        `${STRAPI_URL}/api/lesson-progresses?filters[student][id][$eq]=${user.id}&filters[lesson][documentId][$eq]=${lessonId}`,
+        { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }
+      );
+      if (progressRes.ok) {
+        const progressData = await progressRes.json();
+        isCompleted = progressData.data && progressData.data.length > 0;
+      }
+    }
+
+    return { allowed: true, lesson, course, lessons, userId: user.id, isCompleted };
   } catch (err) {
-    return { allowed: false, lesson: null, course: null, lessons: [] };
+    return { allowed: false, lesson: null, course: null, lessons: [], userId: null, isCompleted: false };
   }
 }
 
@@ -70,7 +84,7 @@ export default async function LessonViewerPage({
   params: Promise<{ id: string; lessonId: string }>;
 }) {
   const { id: courseId, lessonId } = await params;
-  const { allowed, lesson, course, lessons } = await getLessonData(courseId, lessonId);
+  const { allowed, lesson, course, lessons, isCompleted } = await getLessonData(courseId, lessonId);
 
   if (!allowed) {
     redirect(`/courses/${courseId}`);
@@ -112,7 +126,15 @@ export default async function LessonViewerPage({
         </div>
 
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-6 shadow-2xl">
-          <h1 className="text-3xl font-extrabold text-white">{lesson.title}</h1>
+          <div className="flex items-start justify-between gap-4">
+            <h1 className="text-3xl font-extrabold text-white">{lesson.title}</h1>
+            {/* Completion badge */}
+            {isCompleted && (
+              <span className="shrink-0 flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+                ✓ Completed
+              </span>
+            )}
+          </div>
 
           {/* Video Player Embed if videoUrl exists */}
           {lesson.videoUrl && (
@@ -134,8 +156,13 @@ export default async function LessonViewerPage({
             {lesson.content || 'No text content provided for this lesson.'}
           </div>
 
+          {/* Mark Complete Button */}
+          <div className="pt-4 border-t border-slate-800/60">
+            <MarkCompleteButton lessonId={lessonId} isCompleted={isCompleted} />
+          </div>
+
           {/* Navigation Controls */}
-          <div className="pt-8 border-t border-slate-800 flex items-center justify-between gap-4">
+          <div className="pt-4 border-t border-slate-800 flex items-center justify-between gap-4">
             {prevLesson ? (
               <Link
                 href={`/courses/${courseId}/lessons/${prevLesson.documentId || prevLesson.id}`}
